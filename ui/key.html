@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="pi.css" />
+		<script src="pi.js"></script>
+	</head>
+	<body>
+		<div id="app"></div>
+		<script>
+			const TARGET = ["select", "target", "Acts on", [["current", "The thread you looked at last"], ["top", "The thread that needs you most"]], "current"];
+			const SHORTCUTS = [
+				["thread.previous", "Previous thread"], ["thread.next", "Next thread"], ["chat.new", "New chat"], ["commandPalette.toggle", "Command palette"],
+				["sidebar.toggle", "Sidebar"], ["terminal.toggle", "Terminal"], ["diff.toggle", "Diff"], ["chat.find", "Find in chat"], ["filePicker.toggle", "File picker"],
+				["thread.pin", "Pin thread"], ["thread.settle", "Settle thread"], ["navigation.back", "Back"], ["navigation.forward", "Forward"],
+				["modelPicker.toggle", "Model picker"], ["composer.mode", "Composer mode"], ["projectSearch.toggle", "Search project"],
+				["threadPanel.toggle", "Thread panel"], ["rightPanel.toggle", "Right panel"], ["thread.undo", "Undo last turn"],
+			];
+			// Fields per key. "dial." entries are the dials.
+			const KEYS = {
+				thread: {
+					help: "Shows one thread from the list T3 Deck keeps: needs you first, then failed, finished (not read yet), working, then the rest of your open threads. Press: open it in T3 Code. Hold: mark it done (settle), which takes it off the list.",
+					fields: [["number", "slot", "Slot", "1 = the top of the list", 1]],
+				},
+				reply: {
+					help: "Sends this text as your next message. A thread that is still working gets it queued for its next turn, like T3's own Queue. The key shows the thread it goes to.",
+					fields: [["text", "text", "Message", "Continue", ""], TARGET],
+				},
+				stop: { help: "Stops the run of the thread you looked at last. It lights up red while that thread is working.", fields: [TARGET] },
+				settle: { help: "Marks the thread done (T3's Settle). It leaves the list until something new happens in it.", fields: [TARGET] },
+				new: {
+					help: "Without a prompt: T3 Code's New chat shortcut. With a prompt: opens a new draft with that prompt in T3 Code. T3 never sends a draft by itself; you press Send.",
+					fields: [["text", "label", "Title", "New thread", ""], ["text", "prompt", "Prompt", "optional", ""], ["text", "repo", "Repository", "optional, owner/name", ""]],
+				},
+				open: { help: "Brings T3 Code to the front, on the thread you looked at last.", fields: [["text", "label", "Title", "T3 Code", ""]] },
+				shortcut: {
+					help: "Presses one of T3 Code's keyboard shortcuts (from your keybindings). It brings T3 Code to the front first, and never sends keys to another program.",
+					fields: [["select", "command", "Command", SHORTCUTS, "thread.next"], ["text", "label", "Title", "blank = the command's name; \\n breaks the line", ""]],
+				},
+				"dial.threads": { help: "Turn: walk the thread list. Press or touch: open the thread. Long touch: mark it done.", fields: [] },
+				"dial.reply": {
+					help: "Turn: pick a reply. Press: send it. Touch: open the thread it goes to, to check first.",
+					fields: [["area", "replies", "Replies", "One per line. Blank = Continue / Yes, do it / Run the tests and fix what fails / Commit your work / Explain what you changed", ""], TARGET],
+				},
+				"dial.nav": { help: "Turn: T3 Code's next / previous thread (while T3 Code is in front). Press: mark the thread done. Touch: jump to the thread that needs you most.", fields: [] },
+			};
+
+			function render() {
+				const kind = (/^com\.coreloop\.t3\.(.+)$/.exec(PI.action) || [])[1];
+				const def = KEYS[kind];
+				const app = document.getElementById("app");
+				app.innerHTML = "";
+				if (!def) return;
+				app.append(h("div", { class: "help" }, def.help));
+				const s = PI.settings;
+				for (const [type, key, label, a, b] of def.fields) {
+					let field;
+					if (type === "text" || type === "number") {
+						field = h("input", { type, placeholder: a, value: s[key] ?? (type === "number" ? b : "") });
+						field.addEventListener("change", () => PI.setSettings({ [key]: type === "number" ? Number(field.value) || b : field.value }));
+					} else if (type === "area") {
+						field = h("textarea", { rows: 6, placeholder: a }, s[key] || "");
+						field.addEventListener("change", () => PI.setSettings({ [key]: field.value }));
+					} else if (type === "select") {
+						field = h("select", {}, ...a.map(([v, t]) => h("option", { value: v, selected: (s[key] ?? b) === v }, t)));
+						field.addEventListener("change", () => PI.setSettings({ [key]: field.value }));
+					}
+					app.append(row(label, field));
+				}
+			}
+			PI.on("ready", render);
+			PI.on("settings", render);
+		</script>
+	</body>
+</html>

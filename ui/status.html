@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="pi.css" />
+		<script src="pi.js"></script>
+	</head>
+	<body>
+		<div id="app"></div>
+		<script>
+			const app = document.getElementById("app");
+			let info = null;
+			let setupOpen = null; // null = open when something needs fixing
+
+			/** The first-run checklist: each step, and how to fix the ones that don't work. */
+			function setup(checks) {
+				const hard = checks.filter((c) => !c.soft);
+				const bad = hard.filter((c) => !c.ok).length;
+				const warn = checks.filter((c) => c.soft && !c.ok).length;
+				const box = h("details", { class: "setup" });
+				box.open = setupOpen ?? bad > 0;
+				box.addEventListener("toggle", () => (setupOpen = box.open));
+				const head = bad ? `${bad} step${bad > 1 ? "s" : ""} to fix` : warn ? "ready (see the note below)" : "ready, everything works";
+				box.append(h("summary", {}, h("span", { class: bad ? "dot" : warn ? "dot wait" : "dot ok" }), head));
+				for (const c of checks) {
+					box.append(
+						h(
+							"div",
+							{ class: "step" },
+							h("span", { class: c.ok ? "dot ok" : c.soft ? "dot wait" : "dot" }),
+							h("div", {}, h("div", {}, h("b", {}, c.label), c.detail ? h("span", { class: "dim" }, " · ", c.detail) : null), c.ok ? null : h("div", { class: "note" }, c.fix)),
+						),
+					);
+				}
+				return box;
+			}
+
+			function render() {
+				app.innerHTML = "";
+				app.append(h("div", { class: "help" }, "Shows how many T3 Code threads need you, failed, finished or are working. The ring blinks when something new happens. Press: open the thread that needs you most. Hold: open T3 Code."));
+				if (!info) {
+					app.append(row("T3 Code", h("div", { class: "status" }, h("span", { class: "dot wait" }), "asking the plugin…")));
+					return;
+				}
+				if (info.checks) app.append(row("Setup", setup(info.checks)));
+				const st = info.status;
+				const text = st === "online" ? `connected, ${info.threads} threads (${info.origin})` : st === "auth" ? `sign-in: ${info.error || "needs a token"}` : st === "connecting" ? "connecting…" : info.error || "offline";
+				app.append(row("T3 Code", h("div", { class: "status" }, h("span", { class: st === "online" ? "dot ok" : st === "connecting" ? "dot wait" : "dot" }), text)));
+
+				const exp = info.tokenExpires ? new Date(info.tokenExpires) : null;
+				const tokenText = info.hasToken ? (exp ? `valid until ${exp.toLocaleDateString()} (renews by itself)` : "set") : "none yet";
+				const again = h("button", { class: "action" }, "Get a new token");
+				again.addEventListener("click", () => {
+					again.textContent = "Asking T3 Code…";
+					PI.toPlugin({ event: "newToken" });
+				});
+				app.append(
+					row(
+						"Access",
+						h(
+							"div",
+							{},
+							h("div", {}, tokenText),
+							again,
+							h("div", { class: "note" }, "The plugin gets its own T3 Code session from T3's command line (t3 auth session issue), labelled “Stream Deck”, allowed to read threads and send messages. You can revoke it in T3 Code ▸ Settings ▸ Sharing & access."),
+						),
+					),
+				);
+
+				const auto = h("input", { type: "checkbox", checked: info.auto });
+				const rules = h("textarea", { rows: 7, spellcheck: "false" }, info.rules || "");
+				const save = () => PI.toPlugin({ event: "save", auto: auto.checked, rules: rules.value });
+				auto.addEventListener("change", save);
+				rules.addEventListener("change", save);
+				const reset = h("button", { class: "action" }, "Reset rules");
+				reset.addEventListener("click", () => {
+					rules.value = info.defaultRules;
+					save();
+				});
+				app.append(
+					row(
+						"Profiles",
+						h(
+							"div",
+							{},
+							h("label", { class: "check" }, auto, "Switch the deck by the program in front"),
+							rules,
+							reset,
+							h("div", { class: "note" }, "One rule per line: program = profile [page]. The first match wins; * matches anything. Profiles: Desktop (T3 Deck Desktop), Code (T3 Deck Code), or ignore to leave the deck alone, e.g. for a program that has its own Stream Deck profile. class:Name matches a window class instead of a program."),
+							h("div", { class: "note" }, `It switches only when you change programs, so a profile you pick by hand stays until then. In front now: ${info.front || "?"}${info.watcher ? "" : " (watcher not running)"}.`),
+						),
+					),
+				);
+			}
+
+			PI.on("ready", () => {
+				render();
+				PI.toPlugin({ event: "info" });
+				// Keep the checklist current while the page is open (T3 Code starting, a token arriving).
+				setInterval(() => PI.toPlugin({ event: "info" }), 3000);
+			});
+			PI.on("message", (m) => {
+				if (m.event !== "info") return;
+				const focused = document.activeElement && document.activeElement.tagName === "TEXTAREA";
+				info = m;
+				if (!focused) render();
+			});
+		</script>
+	</body>
+</html>

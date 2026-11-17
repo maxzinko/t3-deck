@@ -1,0 +1,206 @@
+:root {
+	--bg: #2d2d2d;
+	--field: #3d3d3d;
+	--text: #d8d8d8;
+	--dim: #969696;
+	--accent: #9d8cff;
+}
+* {
+	box-sizing: border-box;
+}
+html,
+body {
+	margin: 0;
+	padding: 0;
+	background: var(--bg);
+	color: var(--text);
+	font: 9pt "Segoe UI", -apple-system, "Helvetica Neue", sans-serif;
+}
+body {
+	padding: 6px 8px 14px 4px;
+}
+.row {
+	display: flex;
+	align-items: flex-start;
+	margin: 6px 0;
+	min-height: 24px;
+}
+.row > label {
+	flex: 0 0 96px;
+	text-align: right;
+	padding: 5px 10px 0 0;
+	color: var(--dim);
+}
+.row > .field {
+	flex: 1;
+	min-width: 0;
+}
+input[type="text"],
+input[type="number"],
+input[type="password"],
+select {
+	width: 100%;
+	height: 24px;
+	background: var(--field);
+	color: var(--text);
+	border: 1px solid transparent;
+	border-radius: 3px;
+	padding: 2px 6px;
+	font: inherit;
+	outline: none;
+}
+input:focus,
+select:focus {
+	border-color: var(--accent);
+}
+input::placeholder {
+	color: #7a7a7a;
+}
+.help {
+	margin: 6px 0 8px 96px;
+	padding: 4px 8px;
+	border-left: 3px solid var(--accent);
+	color: var(--text);
+	line-height: 1.4;
+}
+.note {
+	color: var(--dim);
+	margin-top: 3px;
+	line-height: 1.35;
+}
+.seg {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 3px;
+}
+.seg button {
+	flex: 1 1 auto;
+	min-width: 46px;
+	height: 24px;
+	background: var(--field);
+	color: var(--text);
+	border: 0;
+	border-radius: 3px;
+	font: inherit;
+	cursor: pointer;
+	padding: 0 6px;
+}
+.seg button.on {
+	background: var(--accent);
+	color: #1d1d1d;
+	font-weight: 600;
+}
+button.action {
+	height: 24px;
+	background: var(--field);
+	color: var(--text);
+	border: 0;
+	border-radius: 3px;
+	padding: 0 12px;
+	font: inherit;
+	cursor: pointer;
+}
+button.action:hover {
+	background: #4a4a4a;
+}
+.list {
+	height: 188px;
+	overflow-y: auto;
+	background: var(--field);
+	border: 1px solid var(--accent);
+	border-radius: 3px;
+}
+.list .item {
+	padding: 3px 8px;
+	cursor: pointer;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.list .item:hover {
+	background: #4a4a4a;
+}
+.list .item.on {
+	background: var(--accent);
+	color: #1d1d1d;
+	font-weight: 600;
+}
+.list .group {
+	padding: 4px 8px 2px;
+	color: var(--accent);
+	font-weight: 600;
+	font-size: 8pt;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+.check {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding-top: 4px;
+}
+.status {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding-top: 4px;
+}
+.dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: #f2665e;
+}
+.dot.ok {
+	background: #3ec7a5;
+}
+.dot.wait {
+	background: #f2d14b;
+}
+ol {
+	margin: 4px 0 0;
+	padding-left: 18px;
+	line-height: 1.5;
+}
+code {
+	color: #fff;
+}
+.inline {
+	display: flex;
+	gap: 4px;
+}
+
+textarea {
+	width: 100%;
+	min-height: 96px;
+	box-sizing: border-box;
+	background: #3d3d3d;
+	color: #d8d8d8;
+	border: 1px solid #555;
+	border-radius: 3px;
+	font: 11px/1.4 Consolas, monospace;
+	padding: 4px 6px;
+	resize: vertical;
+}
+
+.setup summary {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding-top: 4px;
+	cursor: pointer;
+}
+.setup .step {
+	display: flex;
+	align-items: flex-start;
+	gap: 6px;
+	margin-top: 5px;
+}
+.setup .step .dot {
+	flex: none;
+	margin-top: 3px;
+}
+.dim {
+	color: var(--dim);
+	overflow-wrap: anywhere;
+}

@@ -1,0 +1,34 @@
+name: Release
+
+# Push a tag like v1.0.0 (matching package.json) to build, test and publish
+# com.coreloop.t3.streamDeckPlugin as a GitHub release.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Tag matches package.json
+        shell: bash
+        run: test "v$(node -p "require('./package.json').version")" = "${GITHUB_REF_NAME}"
+      - run: npm run build
+      - run: npm test
+      - run: npx streamdeck pack com.coreloop.t3.sdPlugin --output dist --force --no-update-check
+      - name: Publish the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes=$(node -e "const s=require('fs').readFileSync('CHANGELOG.md','utf8');const m=s.split(/^## /m).find(x=>x.startsWith(process.argv[1]));console.log(m?m.split('\n').slice(1).join('\n').trim():'')" "${GITHUB_REF_NAME#v}")
+          gh release create "$GITHUB_REF_NAME" dist/com.coreloop.t3.streamDeckPlugin --title "T3 Deck $GITHUB_REF_NAME" --notes "$notes"

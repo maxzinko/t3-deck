@@ -1,0 +1,46 @@
+{
+  "name": "t3-deck",
+  "version": "1.0.0",
+  "description": "Stream Deck plugin for T3 Code: live thread status, quick replies, stop and mark done, and a deck that follows the program in front.",
+  "license": "MIT",
+  "author": "Core Loop",
+  "homepage": "https://github.com/maxzinko/t3-deck#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maxzinko/t3-deck.git"
+  },
+  "bugs": {
+    "url": "https://github.com/maxzinko/t3-deck/issues"
+  },
+  "keywords": [
+    "stream-deck",
+    "streamdeck-plugin",
+    "t3-code",
+    "elgato",
+    "ai-agents"
+  ],
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "test": "node test/plugin.test.mjs",
+    "validate": "streamdeck validate com.coreloop.t3.sdPlugin",
+    "pack": "node tools/build.mjs && streamdeck pack com.coreloop.t3.sdPlugin --output dist --force",
+    "link": "streamdeck link com.coreloop.t3.sdPlugin",
+    "preview": "node test/sheet.mjs docs/keys.png && node test/layouts.mjs"
+  },
+  "dependencies": {
+    "@elgato/streamdeck": "^3.0.4",
+    "@resvg/resvg-wasm": "^2.6.2"
+  },
+  "devDependencies": {
+    "@elgato/cli": "^1.10.4",
+    "@rollup/plugin-commonjs": "^29.0.3",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "rollup": "^4.68.0",
+    "ws": "^8.22.1"
+  }
+}

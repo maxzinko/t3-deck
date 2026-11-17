@@ -1,0 +1,8 @@
+node_modules/
+test/out/
+dist/
+*.streamDeckPlugin
+
+# Build output (npm run build)
+com.coreloop.t3.sdPlugin/
+.work/
